@@ -1,0 +1,26 @@
+@FireApp_HostAddress = http://localhost:5180/api
+
+GET {{FireApp_HostAddress}}/drivers/1
+Accept: application/json
+
+###
+POST {{FireApp_HostAddress}}/drivers HTTP/1.1
+content-type: application/json
+
+{
+  "id": "1",
+  "name": "driver name",
+  "number": 0,
+  "status": 1
+}
+
+###
+POST {{FireApp_HostAddress}}/drivers HTTP/1.1
+content-type: application/json
+
+{
+  "id": "2",
+  "name": "driver name 2",
+  "number": 0,
+  "status": 1
+}
