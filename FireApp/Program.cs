@@ -1,5 +1,5 @@
-using System.Runtime.InteropServices;
-using FireApp;
+using System.IO.Abstractions;
+using FireApp.Identifiers;
 using FireApp.Models.Services;
 using Hangfire;
 using Hangfire.MemoryStorage;
@@ -39,7 +39,6 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.MapControllers();
 
-//app.UseHangfireDashboard();
 app.UseHangfireDashboard(
     "/hangfire",
     new DashboardOptions
@@ -54,14 +53,23 @@ app.UseHangfireDashboard(
             }
         }
     });
-
 app.MapHangfireDashboard();
 
-FileIdentifier.TryGetFileUniqueSystemId("Resources/sample1.txt", out string? id1);
-Console.WriteLine(id1);
-FileIdentifier.TryGetFileUniqueSystemId("Resources/subFolder/sample2.txt", out string? id2 );
-Console.WriteLine(id2);
+FileSystem fileSystem = new();
+LocalWindowsFileIdentifierStrategy strategy = new();
+Console.WriteLine(
+    strategy.TryValueFileId(
+        file: fileSystem.FileInfo.New("Resources/sample1.txt"),
+        out WindowsFileId? id1)
+        ? id1!.ValueFileId()
+        : "No id found");
 
+Console.WriteLine(
+    strategy.TryValueFileId(
+        file: fileSystem.FileInfo.New("Resources/subFolder/sample2.txt"),
+        out WindowsFileId? id2)
+        ? id2!.ValueFileId()
+        : "No id found 2");
+
+Console.WriteLine(id2?.ValueFileId() == "6422528123095|908969687");
 app.Run();
-
-
