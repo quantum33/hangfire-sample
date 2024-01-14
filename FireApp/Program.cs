@@ -1,3 +1,5 @@
+using System.Runtime.InteropServices;
+using FireApp;
 using FireApp.Models.Services;
 using Hangfire;
 using Hangfire.MemoryStorage;
@@ -55,4 +57,11 @@ app.UseHangfireDashboard(
 
 app.MapHangfireDashboard();
 
+FileIdentifier.TryGetFileUniqueSystemId("Resources/sample1.txt", out string? id1);
+Console.WriteLine(id1);
+FileIdentifier.TryGetFileUniqueSystemId("Resources/subFolder/sample2.txt", out string? id2 );
+Console.WriteLine(id2);
+
 app.Run();
+
+
