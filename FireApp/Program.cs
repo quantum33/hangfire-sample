@@ -56,20 +56,20 @@ app.UseHangfireDashboard(
 app.MapHangfireDashboard();
 
 FileSystem fileSystem = new();
-LocalWindowsFileIdentifierStrategy strategy = new();
+ByLocalWindowsFileIdentifier strategy = new();
 Console.WriteLine(
     strategy.TryValueFileId(
         file: fileSystem.FileInfo.New("Resources/sample1.txt"),
-        out WindowsFileId? id1)
-        ? id1!.ValueFileId()
+        out var id1)
+        ? id1
         : "No id found");
 
 Console.WriteLine(
     strategy.TryValueFileId(
         file: fileSystem.FileInfo.New("Resources/subFolder/sample2.txt"),
-        out WindowsFileId? id2)
-        ? id2!.ValueFileId()
+        out var id2)
+        ? id2
         : "No id found 2");
 
-Console.WriteLine(id2?.ValueFileId() == "6422528123095|908969687");
+Console.WriteLine(id2?.Id == "6422528123095|908969687");
 app.Run();

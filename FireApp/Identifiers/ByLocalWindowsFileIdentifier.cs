@@ -5,29 +5,29 @@ using Microsoft.Win32.SafeHandles;
 
 namespace FireApp.Identifiers;
 
-public record WindowsFileId
+public class ByLocalWindowsFileIdentifier : IdentifierStrategy
 {
-    public string ValueFileId() => FileIndexHigh +
-                                   FileIndexLow.ToString() +
-                                   "|" +
-                                   VolumeSerialNumber;
-    public uint FileAttributes { get; init; }
-    public DateTime CreationTime { get; init; }
-    public DateTime LastAccessTime { get; init; }
-    public DateTime LastWriteTime { get; init; }
-    public uint VolumeSerialNumber { get; init; }
-    public uint FileSizeHigh { get; init; }
-    public uint FileSizeLow { get; init; }
-    public uint NumberOfLinks { get; init; }
-    public uint FileIndexHigh { get; init; }
-    public uint FileIndexLow { get; init; }
-}
-
-public class LocalWindowsFileIdentifierStrategy : IIdentifierStrategy<WindowsFileId>
-{
-    public bool TryValueFileId(IFileInfo file, out WindowsFileId? fileId)
+    public record FileId(IFileInfo FileInfo) : IGetFileId
     {
-        fileId = GetFileUniqueSystemId(file.FullName);
+        public string ValueFileId() => FileIndexHigh +
+                                       FileIndexLow.ToString() +
+                                       "|" +
+                                       VolumeSerialNumber;
+        public uint FileAttributes { get; init; }
+        public DateTime CreationTime { get; init; }
+        public DateTime LastAccessTime { get; init; }
+        public DateTime LastWriteTime { get; init; }
+        public uint VolumeSerialNumber { get; init; }
+        public uint FileSizeHigh { get; init; }
+        public uint FileSizeLow { get; init; }
+        public uint NumberOfLinks { get; init; }
+        public uint FileIndexHigh { get; init; }
+        public uint FileIndexLow { get; init; }
+    }
+
+    public override bool TryValueFileId(IFileInfo file, out IdentifiedFile? fileId)
+    {
+        fileId = GetFileUniqueSystemId(file);
         return fileId != null;
     }
 
@@ -39,7 +39,7 @@ public class LocalWindowsFileIdentifierStrategy : IIdentifierStrategy<WindowsFil
      * If you can assume that NTFS is used, you may also want to consider using Alternate Data Streams to store the metadata.
      */
 
-    private static WindowsFileId? GetFileUniqueSystemId(string fileName)
+    private static IdentifiedFile? GetFileUniqueSystemId(IFileInfo file)
     {
         bool fileRead = false;
 
@@ -47,10 +47,16 @@ public class LocalWindowsFileIdentifierStrategy : IIdentifierStrategy<WindowsFil
         {
             try
             {
-                using FileStream stream = File.Open(fileName, FileMode.Open);
+                using FileStream stream = File.Open(file.FullName, FileMode.Open);
                 BY_HANDLE_FILE_INFORMATION byHandleFileInformation = new BY_HANDLE_FILE_INFORMATION();
                 GetFileInformationByHandle(stream.SafeFileHandle, out byHandleFileInformation);
-                WindowsFileId result = ToWindowsFileId(byHandleFileInformation);
+                FileId intermediate = ToWindowsFileId(byHandleFileInformation, file);
+
+                var result = new IdentifiedFile(
+                    intermediate.ValueFileId(),
+                    file,
+                    typeof(ByLocalWindowsFileIdentifier));
+                
                 stream.Close();
                 fileRead = true;
 
@@ -95,7 +101,7 @@ public class LocalWindowsFileIdentifierStrategy : IIdentifierStrategy<WindowsFil
         public uint FileIndexLow;
     }
 
-    private static WindowsFileId ToWindowsFileId(BY_HANDLE_FILE_INFORMATION fileInformation) => new()
+    private static FileId ToWindowsFileId(BY_HANDLE_FILE_INFORMATION fileInformation, IFileInfo file) => new(file)
     {
         FileAttributes = fileInformation.FileAttributes,
         CreationTime = ToDateTime(fileInformation.CreationTime),
