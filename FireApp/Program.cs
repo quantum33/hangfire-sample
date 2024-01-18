@@ -56,7 +56,8 @@ app.UseHangfireDashboard(
 app.MapHangfireDashboard();
 
 FileSystem fileSystem = new();
-ByLocalWindowsFileIdentifier strategy = new();
+// ByLocalWindowsFileIdentifier strategy = new();
+ByFullNameIdentifier strategy = new();
 Console.WriteLine(
     strategy.TryValueFileId(
         file: fileSystem.FileInfo.New("Resources/sample1.txt"),
@@ -67,9 +68,11 @@ Console.WriteLine(
 Console.WriteLine(
     strategy.TryValueFileId(
         file: fileSystem.FileInfo.New("Resources/subFolder/sample2.txt"),
-        out var id2)
+        out IdentifiedFile? id2)
         ? id2
         : "No id found 2");
 
-Console.WriteLine(id2?.Id == "6422528123095|908969687");
+Console.WriteLine(id2.Id == "6422528123095|908969687");
+DriveInfo drive = new DriveInfo(Path.GetPathRoot(id2?.File.FullName) ?? string.Empty);
+Console.WriteLine(drive.DriveFormat);
 app.Run();

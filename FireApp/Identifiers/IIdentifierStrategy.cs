@@ -10,8 +10,6 @@ public abstract class IdentifierStrategy
 
 public record IdentifiedFile
 {
-    private readonly byte[] _fileContentAsHash;
-
     public IdentifiedFile(string id, IFileInfo file, Type identifierStrategyType)
     {
         if (string.IsNullOrEmpty(id))
@@ -22,20 +20,21 @@ public record IdentifiedFile
         Id = id;
         File = file ?? throw new ArgumentNullException(nameof(file));
         IdentifierStrategyType = identifierStrategyType ?? throw new ArgumentNullException(nameof(identifierStrategyType));
-
-        _fileContentAsHash = file.FileContentAsMd5();
     }
 
     public string Id { get; }
+
     public IFileInfo File { get; }
+
     public Type IdentifierStrategyType { get; }
     
     public string GetFileContentAsString()
     {
+        byte[] fileContentAsHash = File.FileContentAsMd5();
         // Convert byte array to a string
-        StringBuilder result = new(_fileContentAsHash.Length*2);
+        StringBuilder result = new(fileContentAsHash.Length*2);
 
-        foreach (byte t in _fileContentAsHash)
+        foreach (byte t in fileContentAsHash)
         {
             result.Append(t.ToString("x2"));
         }
