@@ -27,14 +27,16 @@ public record IdentifiedFile
     public IFileInfo File { get; }
 
     public Type IdentifierStrategyType { get; }
-    
+
+    private byte[]? _fileContentAsHash;
+    public byte[] FileHash => _fileContentAsHash ??= File.FileContentAsMd5();
+
     public string GetFileContentAsString()
     {
-        byte[] fileContentAsHash = File.FileContentAsMd5();
         // Convert byte array to a string
-        StringBuilder result = new(fileContentAsHash.Length*2);
+        StringBuilder result = new(FileHash.Length*2);
 
-        foreach (byte t in fileContentAsHash)
+        foreach (byte t in FileHash)
         {
             result.Append(t.ToString("x2"));
         }
