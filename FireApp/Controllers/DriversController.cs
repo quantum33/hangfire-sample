@@ -7,15 +7,10 @@ namespace FireApp.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
-public class DriversController : Controller
+public class DriversController(ILogger<DriversController> logger) : Controller
 {
-    private readonly ILogger<DriversController> _logger;
+    private readonly ILogger<DriversController> _logger = logger;
     private static readonly List<Driver> drivers = new();
-
-    public DriversController(ILogger<DriversController> logger)
-    {
-        _logger = logger;
-    }
 
     [HttpPost]
     public IActionResult Add(Driver driver)
